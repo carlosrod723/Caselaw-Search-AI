@@ -1,216 +1,271 @@
 # CaseLaw AI Frontend
 
-A modern, responsive web application for legal professionals to search, explore, and analyze case law using semantic search powered by vector embeddings and large language models.
+A modern, responsive web application for legal professionals to search, explore, and analyze millions of court cases using natural language. Built with React, TypeScript, and powered by advanced semantic search technology.
 
-## Technology Stack
+> **Note**: This is the frontend documentation. For backend setup and full project overview, see the [main project README](../README.md).
+
+## 🚀 Quick Start
+
+Get up and running in just 3 steps!
+
+### Prerequisites Check
+Before you begin, ensure you have:
+- ✅ Node.js 18.x or higher (`node --version`)
+- ✅ npm 8.x or higher (`npm --version`)
+- ✅ Backend API running (see [main README](../README.md) for backend setup)
+
+### 3-Step Setup
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/carlosrod723/Caselaw-Search-AI.git
+cd Caselaw-Search-AI/frontend
+
+# 2. Install dependencies
+npm install
+
+# 3. Start the development server
+npm run dev
+```
+
+🎉 **That's it!** Visit [http://localhost:5173](http://localhost:5173) to see the app in action.
+
+## ✨ Features
+
+### 🔍 Intelligent Search
+- **Semantic Search**: Use natural language queries like "fourth amendment vehicle search" instead of complex keyword combinations
+- **Real-time Results**: Get instant search results as you type with debounced API calls
+- **Smart Ranking**: Results ordered by relevance using advanced vector similarity
+
+### 🎯 Advanced Filtering
+- **Jurisdiction Filter**: Focus on federal, state, or specific jurisdictions
+- **Court Selection**: Filter by Supreme Court, appellate courts, or district courts
+- **Case Type Classification**: Criminal, Civil, Administrative, Constitutional, or Disciplinary
+- **Date Range**: Search within specific time periods from 1662 to 2020
+
+### 🎨 Beautiful UI/UX
+- **Dark/Light Theme**: Toggle between themes for comfortable reading day or night
+- **Responsive Design**: Works seamlessly on desktop, tablet, and mobile devices
+- **Accessible Components**: Built with accessibility in mind using Radix UI primitives
+
+### 📚 Research Tools
+- **Save Cases**: Build your personal library of important cases
+- **Research Notes**: Add annotations and notes to any case
+- **Export to PDF**: Generate formatted PDFs of case documents
+- **Search History**: Track and revisit your recent searches
+
+## 📸 Screenshots
+
+### Search Interface
+Experience the power of semantic search with our intuitive interface:
+
+![Search Results](../images/search_results.png)
+*Natural language search with instant results*
+
+![Search Results - Example](../images/search_results_homicide.png)
+*Filtered search results for specific case types*
+
+### Case Details
+Deep dive into any case with our comprehensive detail view:
+
+![Case Detail View](../images/case_detail_card_1.png)
+*Full case information with key passages highlighted*
+
+### Filtering Options
+Narrow down results with powerful filters:
+
+![Filter by Jurisdiction](../images/filter_jurisdiction.png)
+![Filter by Case Type](../images/filter_type.png)
+
+### Theme Variations
+Choose your preferred viewing experience:
+
+![Light Theme](../images/home_light_theme.png)
+*Clean, professional light theme*
+
+![Dark Theme](../images/home_dark_theme.png)
+*Eye-friendly dark theme for extended research sessions*
+
+## 🧩 UI Components
+
+Our component library is built on top of [shadcn/ui](https://ui.shadcn.com/), providing beautiful, accessible components out of the box.
+
+### Component Examples
+
+#### Search Bar Component
+```tsx
+import { SearchBar } from '@/components/search/search-bar';
+
+// Simple usage
+<SearchBar 
+  placeholder="Search 6.8 million cases..." 
+  onSearch={(query) => handleSearch(query)} 
+/>
+```
+
+#### Filter Component
+```tsx
+import { Filters } from '@/components/search/filters';
+
+// Advanced filtering
+<Filters
+  jurisdictions={["federal", "new-york", "california"]}
+  caseTypes={["criminal", "civil"]}
+  dateRange={{ from: "2010-01-01", to: "2020-12-31" }}
+  onFilterChange={(filters) => updateSearch(filters)}
+/>
+```
+
+#### Case Card Component
+```tsx
+import { ResultCard } from '@/components/search/result-card';
+
+// Display search results
+<ResultCard
+  case={{
+    id: "123",
+    name: "Miranda v. Arizona",
+    court: "U.S. Supreme Court",
+    date: "1966-06-13",
+    summary: "Established Miranda rights...",
+    relevanceScore: 0.95
+  }}
+  onClick={(caseId) => openCaseDetails(caseId)}
+/>
+```
+
+### Available UI Components
+
+- **Buttons**: Primary, secondary, ghost, and destructive variants
+- **Cards**: For displaying case information and search results
+- **Dialogs**: Modal windows for case details and confirmations
+- **Forms**: Input fields, select dropdowns, and date pickers
+- **Tables**: For structured data display
+- **Toasts**: Non-intrusive notifications
+- **Badges**: For case types and metadata
+- **Skeleton**: Loading states for better UX
+
+## 🛠 Technology Stack
 
 ### Core Framework
-- **React 18**: Utilizing the latest features including concurrent rendering and automatic batching
-- **TypeScript**: Full type safety throughout the application
-- **Vite**: For fast development and optimized production builds
+- **React 18**: Latest features including concurrent rendering
+- **TypeScript**: Full type safety and better developer experience
+- **Vite**: Lightning-fast development and optimized builds
 
-### UI and Styling
-- **Tailwind CSS**: Utility-first CSS framework for rapid UI development
-- **ShadCN UI**: High-quality, accessible component library built on Radix UI
-- **CSS Modules**: For component-scoped styling where needed
+### Styling & UI
+- **Tailwind CSS**: Utility-first CSS for rapid development
+- **shadcn/ui**: High-quality, customizable component library
+- **Lucide Icons**: Beautiful, consistent icon set
 
-### State Management
-- **React Context API**: For global state management (search parameters, user preferences)
-- **React Query**: For server state management, caching, and synchronization
-- **LocalStorage**: For persisting user preferences and saved cases
+### State & Data Management
+- **TanStack Query**: Powerful data synchronization and caching
+- **React Context**: Global state for user preferences and search context
+- **LocalStorage**: Persistent storage for saved cases and preferences
 
-### Routing
-- **Wouter**: Lightweight (~1KB) routing library for React applications
-- **Route-based code splitting**: For optimized loading performance
+### Development Tools
+- **ESLint**: Code quality and consistency
+- **Prettier**: Automatic code formatting
+- **TypeScript**: Static type checking
 
-### Data Fetching
-- **React Query**: For data fetching, caching, and automatic refetching
-- **Axios**: For HTTP requests with interceptors for error handling
-- **Custom API adapter**: Abstraction layer for backend communication
-
-## Directory Structure
+## 📁 Project Structure
 
 ```
 frontend/
-├── client/               # Client-side application code
-│   ├── public/           # Static assets served directly
-│   └── src/              # Source code
-│       ├── assets/       # Static assets processed by build tools
+├── client/               # Client application
+│   ├── public/           # Static assets
+│   │   └── favicon.ico   # App icon
+│   └── src/              
 │       ├── components/   # Reusable UI components
-│       │   ├── case-detail/  # Case detail related components
-│       │   ├── layouts/      # Layout components
-│       │   ├── search/       # Search-related components
-│       │   ├── sidebar/      # Sidebar navigation
-│       │   ├── ui/           # Base UI components
-│       │   └── welcome/      # Welcome screen components
+│       │   ├── case-detail/   # Case viewing components
+│       │   ├── layouts/       # Page layouts
+│       │   ├── search/        # Search functionality
+│       │   ├── sidebar/       # Navigation sidebar
+│       │   ├── ui/            # Base UI components
+│       │   └── welcome/       # Welcome screen
 │       ├── context/      # React context providers
 │       ├── hooks/        # Custom React hooks
-│       ├── lib/          # Utility functions and services
-│       │   └── utils/    # Helper utilities
-│       ├── pages/        # Page-level components
-│       └── types/        # TypeScript type definitions
-├── server/               # Optional server-side code for SSR (if used)
-└── shared/               # Code shared between client and server
+│       ├── lib/          # Utilities and helpers
+│       ├── pages/        # Page components
+│       └── types/        # TypeScript definitions
+├── server/               # Development server config
+└── shared/               # Shared utilities
 ```
 
-## Key Components
-
-### Search Functionality
-
-The search system consists of several interconnected components:
-
-- **`<SearchBar />`**: Main input for natural language queries with autocomplete
-- **`<Filters />`**: Advanced filtering options for jurisdictions, courts, case types, and date ranges
-- **`<SearchResults />`**: Display of search results with optimized rendering for large result sets
-- **`<Pagination />`**: Navigation through paginated search results
-- **`<ResultCard />`**: Individual case result display with key metadata
-
-```tsx
-// Example: Using the search components
-<SearchBar onSearch={handleSearch} />
-<Filters 
-  jurisdictions={availableJurisdictions} 
-  caseTypes={availableCaseTypes}
-  onFilterChange={handleFilterChange} 
-/>
-<SearchResults results={searchResults} />
-<Pagination 
-  currentPage={page} 
-  totalPages={totalPages} 
-  onPageChange={setPage} 
-/>
-```
-
-### Case Details
-
-- **`<CaseDetailDialog />`**: Modal dialog for displaying comprehensive case information
-- **Key passages highlighting**: Identification and emphasis of the most relevant passages
-- **Citation parsing**: Automatic detection and formatting of legal citations
-- **Metadata display**: Structured display of case metadata (court, date, jurisdiction, etc.)
-
-### Navigation and Layout
-
-- **`<Sidebar />`**: Main navigation component with links to different sections
-- **`<MainLayout />`**: Page layout wrapper with proper spacing and structure
-- **`<Footer />`**: Application footer with relevant links and information
-
-### Theme Support
-
-The application supports both light and dark themes through:
-
-- **`useTheme` hook**: Custom hook for theme management
-- **Tailwind dark mode**: Integration with Tailwind's dark mode for consistent styling
-- **User preference persistence**: Remembers user's theme preference across sessions
-
-```tsx
-// Example: Using the theme hook
-const { theme, setTheme } = useTheme();
-
-return (
-  <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
-    Toggle {theme === 'dark' ? 'Light' : 'Dark'} Mode
-  </button>
-);
-```
-
-### Caching Implementation
-
-Performance is enhanced through strategic caching:
-
-- **React Query caching**: Automatic caching of API responses
-- **`caseEnhancementCache.ts`**: Custom cache for expensive case enhancement operations
-- **LocalStorage persistence**: Long-term storage of frequently accessed data
-- **Debounced search**: Prevention of excessive API calls during typing
-
-## Local Development
-
-### Prerequisites
-
-- Node.js 18.x or higher
-- npm 8.x or higher
-- Access to the CaseLaw AI backend API (running locally or remotely)
-
-### Installation
-
-1. Clone the repository (if not already done):
-   ```bash
-   git clone https://github.com/yourusername/caselaw-ai.git
-   cd caselaw-ai/frontend
-   ```
-
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Create a `.env.local` file for environment variables:
-   ```
-   VITE_API_BASE_URL=http://localhost:8000
-   VITE_DEFAULT_RESULTS_PER_PAGE=10
-   ```
-
-4. Start the development server:
-   ```bash
-   npm run dev
-   ```
-
-### Available Scripts
-
-- `npm run dev`: Start development server
-- `npm run build`: Build production-ready assets
-- `npm run preview`: Preview production build locally
-- `npm run lint`: Lint code using ESLint
-- `npm run lint:fix`: Automatically fix linting issues
-- `npm run typecheck`: Check TypeScript types
-- `npm test`: Run tests (if implemented)
+## 🔧 Configuration
 
 ### Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `VITE_API_BASE_URL` | Base URL for backend API requests | `http://localhost:8000` |
-| `VITE_DEFAULT_RESULTS_PER_PAGE` | Default number of results per page | `10` |
-| `VITE_ENABLE_MOCK_API` | Enable mock API responses for development | `false` |
-| `VITE_DEBUG_MODE` | Enable debug logging | `false` |
+Create a `.env.local` file in the frontend directory:
 
-### Testing
+```env
+# API Configuration
+VITE_API_BASE_URL=http://localhost:8000
 
-Run tests with:
+# UI Settings
+VITE_DEFAULT_RESULTS_PER_PAGE=20
+VITE_ENABLE_ANIMATIONS=true
 
-```bash
-npm test
+# Feature Flags
+VITE_ENABLE_PDF_EXPORT=true
+VITE_ENABLE_SAVED_SEARCHES=true
+
+# Development
+VITE_DEBUG_MODE=false
 ```
 
-For specific test files:
+### Available Scripts
 
 ```bash
-npm test -- --testPathPattern=search
+# Development
+npm run dev          # Start dev server (http://localhost:5173)
+npm run build        # Build for production
+npm run preview      # Preview production build
+
+# Code Quality
+npm run lint         # Check code quality
+npm run lint:fix     # Fix linting issues
+npm run typecheck    # TypeScript validation
+
+# Testing
+npm test            # Run test suite
+npm run test:watch  # Run tests in watch mode
 ```
 
-## Performance Optimizations
+## 🚀 Performance Features
 
-The frontend implements several performance optimizations:
+The frontend is optimized for handling millions of search results:
 
-1. **Code splitting**: Lazy loading of components and routes
-2. **Virtualized lists**: For rendering large result sets efficiently
-3. **Memoization**: Strategic use of `useMemo` and `useCallback` for expensive operations
-4. **Debounced inputs**: Prevention of excessive API calls during user input
-5. **Strategic caching**: Both client-side and with React Query
-6. **Image optimization**: Proper sizing and lazy loading of images
-7. **Web Vitals monitoring**: Runtime tracking of performance metrics
+1. **Virtual Scrolling**: Efficiently render large result lists
+2. **Lazy Loading**: Components and routes load on demand
+3. **Debounced Search**: Prevents excessive API calls
+4. **Strategic Caching**: Smart caching with React Query
+5. **Optimized Rendering**: Memoization for expensive operations
+6. **Progressive Enhancement**: Works on slower connections
 
-## Browser Compatibility
-
-CaseLaw AI frontend supports the following browsers:
+## 🌐 Browser Support
 
 - Chrome/Edge (latest 2 versions)
 - Firefox (latest 2 versions)
 - Safari (latest 2 versions)
+- Mobile Safari (iOS 14+)
+- Chrome for Android (latest)
 
-Mobile browsers are supported on:
-- iOS Safari (latest 2 versions)
-- Android Chrome (latest 2 versions)
+## 🤝 Contributing
 
-## Contributing
+We welcome contributions! Please:
 
-Contributions are welcome! Please see the main project README for contribution guidelines.
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+See the [main project README](../README.md) for detailed contribution guidelines.
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](../LICENSE) file for details.
+
+---
+
+Built with ❤️ for the legal community. Happy searching! 🔍⚖️

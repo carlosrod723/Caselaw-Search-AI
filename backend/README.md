@@ -1,6 +1,6 @@
 # CaseLaw AI Backend API
 
-A high-performance, scalable backend API powering the CaseLaw AI search platform. This service provides semantic search capabilities across 6.6 million case law records using vector embeddings, with comprehensive metadata retrieval and case enhancement features.
+A high-performance, scalable backend API powering the CaseLaw AI search platform. This service provides semantic search capabilities across 5.4 million case law records using vector embeddings, with comprehensive metadata retrieval and case enhancement features.
 
 ## Technology Stack
 
@@ -28,11 +28,11 @@ A high-performance, scalable backend API powering the CaseLaw AI search platform
 
 ### Vector Embeddings
 
-- **OpenAI Embeddings**: High-quality vector representations of text
-  - Dense vector representations capturing semantic meaning
-  - Dimension reduction for storage efficiency
-  - Cosine similarity matching for relevant results
-  - Contextual understanding of legal terminology
+- **BAAI/bge-base-en-v1.5**: Local embedding model for high-quality vector representations
+  - 768-dimensional dense vectors capturing semantic meaning
+  - Runs locally without API dependencies
+  - Optimized for legal text understanding
+  - Pre-generated embeddings for all 5.4 million cases
 
 ### Data Validation and Schemas
 
@@ -201,6 +201,65 @@ Binary PDF file with appropriate content-type headers.
 curl -X GET "http://localhost:8000/api/v1/case/12345/pdf" -H "accept: application/pdf" --output case.pdf
 ```
 
+## Data Processing Scripts
+
+### `parallel_processor.py`
+
+Downloads and processes the entire dataset from Hugging Face in parallel:
+
+- **Function**: Downloads 1,000 parquet files from Hugging Face dataset
+- **Processing**: Generates embeddings using BAAI/bge-base-en-v1.5 model
+- **Performance**: Processes at 74 records/second using 8 parallel workers
+- **Output**: 3,199 batch files containing embeddings as pickle files
+- **Runtime**: ~31 hours on M4 Max (16 cores)
+
+```bash
+python parallel_processor.py
+```
+
+### `create_sqlite_index.py`
+
+Creates the SQLite metadata database with case classification:
+
+- **Function**: Processes all parquet files to extract case metadata
+- **Classification**: Automatically categorizes cases into types (Criminal, Civil, etc.)
+- **Indexing**: Creates optimized indexes for fast filtering and full-text search
+- **Output**: 6.3GB SQLite database (`case_lookup.db`)
+- **Features**: Includes CID index for content retrieval
+
+```bash
+python create_sqlite_index.py \
+  --parquet-dir ./caselaw_processing/downloads/[...]/TeraflopAI___Caselaw_Access_Project_clusters \
+  --db ./case_lookup.db
+```
+
+### `upload_vectors.py`
+
+Uploads pre-generated embeddings to Qdrant:
+
+- **Function**: Reads pickle files from parallel_processor.py
+- **Batching**: Uploads in optimized batches to prevent overwhelming Qdrant
+- **Error Handling**: Includes retry logic and progress tracking
+- **Collection**: Creates and populates `caselaw_bge_base_v2` collection
+- **Runtime**: 2-4 hours depending on Qdrant performance
+
+```bash
+python upload_vectors.py --collection caselaw_bge_base_v2
+```
+
+### `optimize_qdrant.py`
+
+Optimizes the Qdrant collection for production performance:
+
+- **Function**: Rebuilds indexes and optimizes storage
+- **Performance**: Reduces search time from 30+ seconds to 1-2 seconds
+- **Features**: Implements scalar quantization and HNSW optimization
+- **Memory**: Reduces memory footprint while maintaining accuracy
+
+```bash
+python optimize_qdrant.py
+```
+
 ## Database Schema
 
 ### SQLite Schema
@@ -262,8 +321,8 @@ Secondary identifiers for alternate retrieval paths.
 
 The Qdrant database stores vector embeddings with the following structure:
 
-- **Collection**: `case_embeddings`
-- **Vector dimension**: 1536 (OpenAI embedding dimension)
+- **Collection**: `caselaw_bge_base_v2`
+- **Vector dimension**: 768 (BAAI/bge-base-en-v1.5 dimension)
 - **Distance metric**: Cosine similarity
 - **Payload fields**:
   - `id`: Case identifier matching SQLite database
@@ -275,31 +334,31 @@ The Qdrant database stores vector embeddings with the following structure:
   
 ## Vector Search Implementation
 
-### Embedding Generation
+### Pre-generated Embeddings
 
-CaseLaw AI uses OpenAI's text-embedding-ada-002 model to generate vector embeddings for all cases in the dataset. The embedding process:
+CaseLaw AI uses pre-generated embeddings created with BAAI/bge-base-en-v1.5:
 
-1. Preprocesses case text to extract most relevant content
-2. Generates embeddings for each case (1536-dimensional vectors)
-3. Stores embeddings in Qdrant with metadata payload
-4. Updates embeddings when case content changes
+1. All 5.4 million cases were processed offline using the local model
+2. 768-dimensional vectors capture semantic meaning of legal text
+3. Embeddings are stored in Qdrant with metadata payload
+4. No runtime embedding generation required - all vectors are pre-computed
 
 ```python
-# Example embedding generation code
-from app.services.openai_service import OpenAIService
+# Embeddings were generated using:
+from sentence_transformers import SentenceTransformer
 
-openai_service = OpenAIService()
-embedding = openai_service.create_embedding(case_text)
+model = SentenceTransformer('BAAI/bge-base-en-v1.5')
+embeddings = model.encode(case_texts, batch_size=32, show_progress_bar=True)
 ```
 
-### Query Refinement
+### Query Processing
 
-Raw user queries are processed before vector search:
+User queries are processed at runtime:
 
-1. Query analysis to identify legal terms and concepts
-2. Expansion of legal abbreviations and citations
-3. Reformulation to prioritize legally significant terms
-4. Generation of embedding for the refined query
+1. Query text is embedded using the same BAAI/bge-base-en-v1.5 model
+2. 768-dimensional query vector is generated
+3. Vector similarity search performed in Qdrant
+4. Results filtered and ranked by relevance
 
 ### Hybrid Search Approach
 
@@ -331,21 +390,27 @@ Several optimizations ensure fast search across the large dataset:
 5. Parallel processing of search results
 6. Background preprocessing of frequent filter combinations
 
+**Performance Metrics:**
+- Search latency reduced from 30+ seconds to 1-2 seconds
+- Processing rate: 74 records/second during indexing
+- 3,199 batch files processed across 8 workers
+
 ## Local Development
 
 ### Prerequisites
 
 - Python 3.9+
 - Docker and Docker Compose (for Qdrant)
-- 16GB+ RAM recommended
+- **16GB RAM minimum** (32GB+ strongly recommended for production)
 - 100GB+ free disk space for the full dataset
+- **SSD/NVMe storage critical** for performance
 
 ### Setup and Installation
 
 1. Clone the repository (if not already done):
    ```bash
-   git clone https://github.com/yourusername/caselaw-ai.git
-   cd caselaw-ai/backend
+   git clone https://github.com/carlosrod723/Caselaw-Search-AI.git
+   cd Caselaw-Search-AI/backend
    ```
 
 2. Create and activate a virtual environment:
@@ -368,7 +433,7 @@ Several optimizations ensure fast search across the large dataset:
 
 ### Environment Variables
 
-Create a `.env` file in the backend directory with the following variables:
+Create a `.env` file in the backend directory (you can copy from `.env.example` if available):
 
 ```
 # API Configuration
@@ -377,13 +442,10 @@ API_PORT=8000
 DEBUG=true
 ENVIRONMENT=development
 
-# OpenAI Configuration
-OPENAI_API_KEY=your_openai_api_key
-
 # Qdrant Configuration
 QDRANT_HOST=localhost
 QDRANT_PORT=6333
-QDRANT_COLLECTION=case_embeddings
+QDRANT_COLLECTION=caselaw_bge_base_v2
 
 # SQLite Configuration
 SQLITE_DB_PATH=./case_lookup.db
@@ -391,6 +453,8 @@ SQLITE_DB_PATH=./case_lookup.db
 # Cache Configuration
 CACHE_TTL=3600
 ENABLE_RESPONSE_CACHE=true
+
+# Note: No OpenAI API key needed - embeddings are pre-generated
 ```
 
 ### Running the Server
@@ -433,7 +497,7 @@ The repository includes a small test dataset in `tests/fixtures` for running tes
 
 ### Working with the Large Dataset
 
-The complete dataset (6.6 million cases, 81GB) requires careful handling:
+The complete dataset (5.4 million cases, 81GB) requires careful handling:
 
 1. **Memory management**: 
    - Use streaming responses for large result sets
@@ -459,9 +523,9 @@ The complete dataset (6.6 million cases, 81GB) requires careful handling:
 
 Minimum recommended specifications for running the full dataset:
 
-- **CPU**: 4+ cores
-- **RAM**: 16GB+
-- **Disk**: 100GB+ SSD storage
+- **CPU**: 4+ cores (8+ recommended)
+- **RAM**: 16GB absolute minimum (32GB+ strongly recommended)
+- **Disk**: 100GB+ SSD/NVMe storage (critical for performance)
 - **Network**: 1Gbps for optimal inter-service communication
 
 ## License
