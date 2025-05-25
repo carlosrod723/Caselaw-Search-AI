@@ -1,0 +1,36 @@
+Please make the following modifications to the project:
+
+1. Remove all user database integration code:
+   - Remove any code related to user accounts, authentication, or persistent user data storage
+   - Replace user data storage with browser localStorage/sessionStorage for temporary preferences
+   - Remove any dependencies or packages specifically used for database connectivity that aren't needed for the Qdrant/vector search integration
+
+2. Ensure proper connection to our existing backend:
+   - The frontend should connect to our FastAPI backend running on http://127.0.0.1:8000
+   - Our backend is already configured to connect to Qdrant at the specified address
+   - The search functionality should send queries to our existing API endpoints
+
+3. Maintain the current UI features:
+   - Keep the welcome screen with search capabilities and examples
+   - Maintain the dark/light mode toggle
+   - Preserve the current search interface and styling
+
+4. Format search results appropriately:
+   - Results should display case information including:
+     - Title (e.g., "Bank One, N.A. v. Payton")
+     - Date (e.g., "2007-09-26")
+     - Citations (e.g., "968 So. 2d 202")
+     - Court (e.g., "Louisiana Court of Appeal")
+     - Jurisdiction (e.g., "Louisiana")
+     - Snippet of the case text
+
+5. Add the following new features:
+   - Export functionality: Allow users to export search results as PDF or in citation formats (Bluebook, APA)
+   - Advanced filters panel: Implement UI for filtering by court, date range, jurisdiction, etc.
+   - Query builder interface: Create a visual way to construct boolean searches (AND, OR, NOT)
+   - Additional keyboard shortcuts: Add more shortcuts for power users beyond Cmd+K/Ctrl+K
+   - Responsive design improvements: Ensure the app works well on tablets/mobile devices
+   - Case preview: When clicking a search result, show a preview with key excerpts before full navigation
+   - Copy citation: Add one-click buttons to copy properly formatted citations
+
+The application should function as a standalone frontend that connects to our existing backend API without requiring any additional database services or ongoing costs.
